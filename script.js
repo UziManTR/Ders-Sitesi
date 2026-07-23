@@ -1,113 +1,149 @@
-// Gizli oyunların listesi ve adresleri
-const oyunlar = [
-    { isim: "Mazean Oyna", link: "https://mazean.com" },
-    { isim: "Poxel Oyna", link: "https://poxel.io" },
-    { isim: "Eaglercraft Oyna", link: "https://eaglercraft.com" },
-    { isim: "Poki Oyna", link: "https://poki.com" }
-];
+document.addEventListener('DOMContentLoaded', () => {
 
-let arayuzOlustu = false; 
+    // ==========================================
+    // 1. AÇIK / KOYU TEMA (DARK MODE) LORİĞİ
+    // ==========================================
+    const themeToggleBtn = document.getElementById('themeToggle');
+    const currentTheme = localStorage.getItem('theme');
 
-// Kutuyu sürekli kontrol eden fonksiyon
-function koduKontrolEt() {
-    const girilenYazi = document.getElementById('kodKutusu').value;
-    const dinamikAlan = document.getElementById('dinamikAlan');
-    
-    // 1. Durum: Eğer hiçbir şey yazmıyorsa boş bırak
-    if (girilenYazi === "") {
-        dinamikAlan.innerHTML = "";
-        arayuzOlustu = false;
-        return;
-    }
-
-    // 2. Durum: Eğer doğru şifre yazıldıysa gizli arayüzü aç
-    if (girilenYazi === 'secretcode1234') {
-        if (!arayuzOlustu) {
-            gizliArayuzOlustur(dinamikAlan);
+    if (currentTheme) {
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        if (currentTheme === 'dark') {
+            themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
         }
-    } else {
-        // 3. Durum: Şifre yanlışsa veya rastgele bir kod yazılıyorsa SAHTE HATA göster
-        arayuzOlustu = false;
-        dinamikAlan.innerHTML = `
-            <div style="background: #5a1818; border: 2px solid #ff4a4a; padding: 15px; margin-top: 20px; border-radius: 8px; text-align: left; font-family: monospace;">
-                <b style="color: #ff4a4a;">[CRITICAL ERROR]</b> Connection failed.<br>
-                <span style="color: #ccc;">Status:</span> Code Compilation Failed<br>
-                <span style="color: #ccc;">Reason:</span> Error 404 - API Gateway Timeout<br>
-                <span style="color: #ff9999;">⚠️ Sunucu yanıt vermiyor. Lütfen kod dizilimini kontrol edin.</span>
-            </div>
-        `;
     }
-}
 
-// TAMAMEN JAVASCRIPT ILE ARAYÜZ (UI) OLUŞTURMA
-function gizliArayuzOlustur(hedefKutu) {
-    arayuzOlustu = true;
-    hedefKutu.innerHTML = ""; // Varsa önceki sahte hatayı temizle
-
-    // Dış panel kutusunu oluşturuyoruz
-    const gizliPanel = document.createElement('div');
-    gizliPanel.style.background = "#111";
-    gizliPanel.style.border = "2px dashed #4caf50";
-    gizliPanel.style.padding = "20px";
-    gizliPanel.style.borderRadius = "10px";
-    gizliPanel.style.maxWidth = "500px";
-    gizliPanel.style.margin = "20px auto";
-
-    // Başlık ekliyoruz
-    const baslik = document.createElement('h2');
-    baslik.innerText = "🔓 Geliştirici Oyun Modu Aktif";
-    baslik.style.color = "#4caf50";
-    gizliPanel.appendChild(baslik);
-
-    // Açıklama yazısı ekliyoruz
-    const aciklama = document.createElement('p');
-    aciklama.innerText = "Gizli pencerede (about:blank) açmak için bir oyuna tıklayın:";
-    gizliPanel.appendChild(aciklama);
-
-    // Her oyun için JS ile buton üretiyoruz
-    oyunlar.forEach(oyun => {
-        const buton = document.createElement('button');
-        buton.innerText = oyun.isim;
-        
-        // Buton stilleri
-        buton.style.background = "#e91e63";
-        buton.style.color = "white";
-        buton.style.border = "none";
-        buton.style.padding = "10px 20px";
-        buton.style.margin = "5px";
-        buton.style.borderRadius = "5px";
-        buton.style.cursor = "pointer";
-        buton.style.fontSize = "14px";
-        
-        // Hover efektleri
-        buton.onmouseover = () => buton.style.background = "#c2185b";
-        buton.onmouseout = () => buton.style.background = "#e91e63";
-
-        // Tıklanınca maskeli pencereyi açma komutu
-        buton.onclick = () => oyunuBaslat(oyun.link);
-
-        gizliPanel.appendChild(buton);
+    themeToggleBtn.addEventListener('click', () => {
+        let theme = document.documentElement.getAttribute('data-theme');
+        if (theme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            localStorage.setItem('theme', 'light');
+            themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+        } else {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+            themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+        }
     });
 
-    hedefKutu.appendChild(gizliPanel);
-}
+    // ==========================================
+    // 2. POMODORO ZAMANLAYICI LOJİĞİ
+    // ==========================================
+    let timeLeft = 25 * 60; // 25 dakika
+    let timerId = null;
+    let isWorkTime = true;
 
-// Oyunu internet adresi görünmeden açan fonksiyon
-function oyunuBaslat(oyunLinki) {
-    const bosPencere = window.open('about:blank', '_blank');
-    bosPencere.document.body.style.margin = "0";
-    bosPencere.document.body.style.height = "100vh";
-    bosPencere.document.body.style.backgroundColor = "#000";
-    
-    const cerceve = bosPencere.document.createElement('iframe');
-    cerceve.src = oyunLinki;
-    cerceve.style.width = "100%";
-    cerceve.style.height = "100%";
-    cerceve.style.border = "none";
-    
-    bosPencere.document.body.appendChild(cerceve);
+    const timerDisplay = document.getElementById('timer');
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const modeStatus = document.getElementById('modeStatus');
 
-    // 🚀 GÜNCELLENEN PANİK MODU: 
-    // Oyun açıldığı an arkadaki sekme anında Metodbox sitesine yönlenir!
-    window.location.href = "https://metodbox.com";
-}
+    function updateDisplay() {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    function startTimer() {
+        if (timerId !== null) return; // Zaten çalışıyorsa tekrar başlatma
+
+        timerId = setInterval(() => {
+            timeLeft--;
+            updateDisplay();
+
+            if (timeLeft === 0) {
+                clearInterval(timerId);
+                timerId = null;
+                
+                // Sesli uyarı ver
+                const alertAudio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+                alertAudio.play().catch(() => {}); // Otomatik oynatma engeline karşı catch
+
+                if (isWorkTime) {
+                    alert("Tebrikler! Ders süresi bitti. 5 dakika mola vakti!");
+                    isWorkTime = false;
+                    timeLeft = 5 * 60;
+                    modeStatus.textContent = "Mod: Mola (5 dk)";
+                } else {
+                    alert("Mola bitti! Tekrar ders başı yapma zamanı.");
+                    isWorkTime = true;
+                    timeLeft = 25 * 60;
+                    modeStatus.textContent = "Mod: Ders Çalışma (25 dk)";
+                }
+                updateDisplay();
+            }
+        }, 1000);
+    }
+
+    function pauseTimer() {
+        clearInterval(timerId);
+        timerId = null;
+    }
+
+    function resetTimer() {
+        pauseTimer();
+        isWorkTime = true;
+        timeLeft = 25 * 60;
+        modeStatus.textContent = "Mod: Ders Çalışma (25 dk)";
+        updateDisplay();
+    }
+
+    startBtn.addEventListener('click', startTimer);
+    pauseBtn.addEventListener('click', pauseTimer);
+    resetBtn.addEventListener('click', resetTimer);
+
+    // ==========================================
+    // 3. NOT DEFTERİ (LOCALSTORAGE) LOJİĞİ
+    // ==========================================
+    const noteInput = document.getElementById('noteInput');
+    const saveStatus = document.getElementById('saveStatus');
+
+    // Önceki kayıtlı notu çek
+    noteInput.value = localStorage.getItem('userNote') || '';
+
+    // Her harf yazıldığında otomatik kaydet
+    noteInput.addEventListener('input', () => {
+        localStorage.setItem('userNote', noteInput.value);
+        saveStatus.textContent = 'Kaydediliyor...';
+        setTimeout(() => { 
+            saveStatus.textContent = 'Kaydedildi'; 
+        }, 500);
+    });
+
+    // ==========================================
+    // 4. DERS ORTALAMASI HESAPLAMA LOJİĞİ
+    // ==========================================
+    const calcBtn = document.getElementById('calcBtn');
+    const vizeInput = document.getElementById('vize');
+    const finalInput = document.getElementById('final');
+    const gradeResult = document.getElementById('gradeResult');
+
+    calcBtn.addEventListener('click', () => {
+        const vize = parseFloat(vizeInput.value);
+        const final = parseFloat(finalInput.value);
+
+        if (isNaN(vize) || isNaN(final) || vize < 0 || vize > 100 || final < 0 || final > 100) {
+            gradeResult.textContent = "Lütfen 0-100 arasında geçerli notlar girin!";
+            gradeResult.style.color = "var(--accent-color)";
+            return;
+        }
+
+        const average = (vize * 0.4) + (final * 0.6);
+        let letter = '';
+
+        if (average >= 90) letter = 'AA';
+        else if (average >= 85) letter = 'BA';
+        else if (average >= 80) letter = 'BB';
+        else if (average >= 75) letter = 'CB';
+        else if (average >= 70) letter = 'CC';
+        else if (average >= 65) letter = 'DC';
+        else if (average >= 60) letter = 'DD';
+        else if (average >= 50) letter = 'FD';
+        else letter = 'FF';
+
+        gradeResult.style.color = "var(--text-color)";
+        gradeResult.textContent = `Ortalama: ${average.toFixed(2)} | Harf Notu: ${letter}`;
+    });
+
+});
