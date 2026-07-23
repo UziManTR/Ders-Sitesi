@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Öğrenci Çalışma Paneli</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #1e1e1e; color: #ffffff; text-align: center; padding: 50px; }
+        h1 { color: #4caf50; }
+        .kutu { background: #2d2d2d; padding: 20px; border-radius: 10px; max-width: 500px; margin: 20px auto; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        input { padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #555; background: #333; color: white; width: 80%; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <h1>Öğrenci Çalışma Araçları</h1>
+    <p>Çalışma alanına hoş geldiniz. Aşağıdan bir araç seçin:</p>
+
+    <!-- Normal Hesaplama Butonları -->
+    <div class="kutu">
+        <button onclick="alert('Kalkülüs Aracı Açılıyor...')">Kalkülüs Aracı</button>
+        <button onclick="alert('Yarıçap Hesaplayıcı Açılıyor...')">Yarıçap Yardımcısı</button>
+    </div>
+
+    <!-- Kodlama Kutusu ve Gizli Tetikleyici -->
+    <div class="kutu">
+        <h3>Kodlama Pratik Kutusu</h3>
+        <p>Test etmek istediğiniz pratik kodunu aşağıya yazın:</p>
+        <input type="text" id="kodKutusu" placeholder="Kod betiğini buraya yazın..." oninput="koduKontrolEt()">
+    </div>
+
+    <!-- JavaScript ile Yapılacak Gizli Arayüz Buraya Gelecek -->
+    <div id="dinamikAlan"></div>
+
+    <!-- Ayrı Olan JavaScript Dosyamızı Bağlıyoruz -->
+    <script src="script.js"></script>
+
+</body>
+</html>
