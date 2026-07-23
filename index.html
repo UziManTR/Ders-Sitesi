@@ -3,39 +3,340 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Öğrenci Çalışma Paneli</title>
+    <title>Ders Çalışma Portalı</title>
+    <!-- FontAwesome İkonları -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #1e1e1e; color: #ffffff; text-align: center; padding: 50px; }
-        h1 { color: #4caf50; }
-        .kutu { background: #2d2d2d; padding: 20px; border-radius: 10px; max-width: 500px; margin: 20px auto; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        button { background: #007bff; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 5px; cursor: pointer; margin: 5px; }
-        button:hover { background: #0056b3; }
-        input { padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #555; background: #333; color: white; width: 80%; text-align: center; }
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --primary-color: #4a90e2;
+            --accent-color: #ff6b6b;
+            --border-color: #e0e0e0;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a2e;
+            --card-bg: #16213e;
+            --text-color: #e9ecef;
+            --primary-color: #0f3460;
+            --accent-color: #e94560;
+            --border-color: #0f3460;
+            --shadow: 0 4px 6px rgba(0,0,0,0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1100px;
+            margin: 0 auto 30px auto;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .theme-toggle-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .card h2 {
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary-color);
+        }
+
+        [data-theme="dark"] .card h2 {
+            color: #4a90e2;
+        }
+
+        /* Pomodoro CSS */
+        .timer-display {
+            font-size: 3.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+            font-family: monospace;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        button.btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        button.btn-danger {
+            background-color: var(--accent-color);
+        }
+
+        button.btn-secondary {
+            background-color: #6c757d;
+        }
+
+        /* Form elemanları */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        input, textarea {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: 0.95rem;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        .result-box {
+            margin-top: 10px;
+            padding: 12px;
+            border-radius: 6px;
+            background-color: var(--bg-color);
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* Responsive düzen ayarları */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .timer-display {
+                font-size: 2.8rem;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <h1>Öğrenci Çalışma Araçları</h1>
-    <p>Çalışma alanına hoş geldiniz. Aşağıdan bir araç seçin:</p>
+    <header>
+        <h1><i class="fa-solid fa-graduation-cap"></i> Ders Portalı</h1>
+        <button class="theme-toggle-btn" id="themeToggle" title="Tema Değiştir">
+            <i class="fa-solid fa-moon"></i>
+        </button>
+    </header>
 
-    <!-- Normal Hesaplama Butonları -->
-    <div class="kutu">
-        <button onclick="alert('Kalkülüs Aracı Açılıyor...')">Kalkülüs Aracı</button>
-        <button onclick="alert('Yarıçap Hesaplayıcı Açılıyor...')">Yarıçap Yardımcısı</button>
+    <div class="container">
+        
+        <!-- 1. POMODORO ZAMANLAYICI -->
+        <div class="card">
+            <h2><i class="fa-solid fa-clock"></i> Pomodoro Zamanlayıcı</h2>
+            <div class="timer-display" id="timer">25:00</div>
+            <div class="btn-group">
+                <button class="btn" id="startBtn"><i class="fa-solid fa-play"></i> Başlat</button>
+                <button class="btn btn-secondary" id="pauseBtn"><i class="fa-solid fa-pause"></i> Duraklat</button>
+                <button class="btn btn-danger" id="resetBtn"><i class="fa-solid fa-rotate-right"></i> Sıfırla</button>
+            </div>
+            <div class="result-box" id="modeStatus">Mod: Ders Çalışma (25 dk)</div>
+        </div>
+
+        <!-- 2. NOT DEFTERİ -->
+        <div class="card">
+            <h2><i class="fa-solid fa-note-sticky"></i> Hızlı Not Defteri</h2>
+            <textarea id="noteInput" placeholder="Notlarınızı buraya yazın... Otomatik kaydedilir."></textarea>
+            <div class="btn-group" style="justify-content: flex-end;">
+                <span id="saveStatus" style="font-size: 0.85rem; opacity: 0.7; align-self: center;"></span>
+            </div>
+        </div>
+
+        <!-- 3. ORTALAMA HESAPLAYICI -->
+        <div class="card">
+            <h2><i class="fa-solid fa-calculator"></i> Not Hesaplayıcı</h2>
+            <div class="input-group">
+                <label for="vize">Vize Notu (%40):</label>
+                <input type="number" id="vize" placeholder="Örn: 70" min="0" max="100">
+            </div>
+            <div class="input-group">
+                <label for="final">Final Notu (%60):</label>
+                <input type="number" id="final" placeholder="Örn: 85" min="0" max="100">
+            </div>
+            <button class="btn" id="calcBtn"><i class="fa-solid fa-square-poll-vertical"></i> Hesapla</button>
+            <div class="result-box" id="gradeResult">Ortalama: -</div>
+        </div>
+
     </div>
 
-    <!-- Kodlama Kutusu ve Gizli Tetikleyici -->
-    <div class="kutu">
-        <h3>Kodlama Pratik Kutusu</h3>
-        <p>Test etmek istediğiniz pratik kodunu aşağıya yazın:</p>
-        <input type="text" id="kodKutusu" placeholder="Kod betiğini buraya yazın..." oninput="koduKontrolEt()">
-    </div>
+    <script>
+        // --- 1. DARK MODE TEMA DÜZENİ ---
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const currentTheme = localStorage.getItem('theme');
 
-    <!-- JavaScript ile Yapılacak Gizli Arayüz Buraya Gelecek -->
-    <div id="dinamikAlan"></div>
+        if (currentTheme) {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            if (currentTheme === 'dark') {
+                themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+            }
+        }
 
-    <!-- Ayrı Olan JavaScript Dosyamızı Bağlıyoruz -->
-    <script src="script.js"></script>
+        themeToggleBtn.addEventListener('click', () => {
+            let theme = document.documentElement.getAttribute('data-theme');
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+                themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+            }
+        });
 
+        // --- 2. POMODORO ZAMANLAYICI KODLARI ---
+        let timeLeft = 25 * 60;
+        let timerId = null;
+        let isWorkTime = true;
+
+        const timerDisplay = document.getElementById('timer');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const modeStatus = document.getElementById('modeStatus');
+
+        function updateDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            if (timerId !== null) return;
+            timerId = setInterval(() => {
+                timeLeft--;
+                updateDisplay();
+                if (timeLeft === 0) {
+                    clearInterval(timerId);
+                    timerId = null;
+                    alert(isWorkTime ? "Mola Vakti! 5 dakika dinlen." : "Ders Vakti! 25 dakika odaklan.");
+                    isWorkTime = !isWorkTime;
+                    timeLeft = isWorkTime ? 25 * 60 : 5 * 60;
+                    modeStatus.textContent = isWorkTime ? "Mod: Ders Çalışma (25 dk)" : "Mod: Mola (5 dk)";
+                    updateDisplay();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            clearInterval(timerId);
+            timerId = null;
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            isWorkTime = true;
+            timeLeft = 25 * 60;
+            modeStatus.textContent = "Mod: Ders Çalışma (25 dk)";
+            updateDisplay();
+        }
+
+        startBtn.addEventListener('click', startTimer);
+        pauseBtn.addEventListener('click', pauseTimer);
+        resetBtn.addEventListener('click', resetTimer);
+
+        // --- 3. NOT DEFTERİ (LOCALSTORAGE) ---
+        const noteInput = document.getElementById('noteInput');
+        const saveStatus = document.getElementById('saveStatus');
+
+        noteInput.value = localStorage.getItem('userNote') || '';
+
+        noteInput.addEventListener('input', () => {
+            localStorage.setItem('userNote', noteInput.value);
+            saveStatus.textContent = 'Kaydedildi...';
+            setTimeout(() => { saveStatus.textContent = ''; }, 1000);
+        });
+
+        // --- 4. DERS ORTALAMASI HESAPLAMA ---
+        const calcBtn = document.getElementById('calcBtn');
+        const vizeInput = document.getElementById('vize');
+        const finalInput = document.getElementById('final');
+        const gradeResult = document.getElementById('gradeResult');
+
+        calcBtn.addEventListener('click', () => {
+            const vize = parseFloat(vizeInput.value);
+            const final = parseFloat(finalInput.value);
+
+            if (isNaN(vize) || isNaN(final) || vize < 0 || vize > 100 || final < 0 || final > 100) {
+                gradeResult.textContent = "Lütfen 0-100 arasında geçerli notlar girin!";
+                gradeResult.style.color = "var(--accent-color)";
+                return;
+            }
+
+            const average = (vize * 0.4) + (final * 0.6);
+            let letter = '';
+
+            if (average >= 90) letter = 'AA';
+            else if (average >= 85) letter = 'BA';
+            else if (average >= 80) letter = 'BB';
+            else if (average >= 75) letter = 'CB';
+            else if (average >= 70) letter = 'CC';
+            else if (average >= 65) letter = 'DC';
+            else if (average >= 60) letter = 'DD';
+            else if (average >= 50) letter = 'FD';
+            else letter = 'FF';
+
+            gradeResult.style.color = "var(--text-color)";
+            gradeResult.textContent = `Ortalama: ${average.toFixed(2)} | Harf Notu: ${letter}`;
+        });
+    </script>
 </body>
 </html>
