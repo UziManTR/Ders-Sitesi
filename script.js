@@ -6,30 +6,45 @@ const oyunlar = [
     { isim: "Poki Oyna", link: "https://poki.com" }
 ];
 
-let arayuzOlustu = false; // Panel iki kere arka arkaya açılmasın diye kontrol
+let arayuzOlustu = false; 
 
 // Kutuyu sürekli kontrol eden fonksiyon
 function koduKontrolEt() {
     const girilenYazi = document.getElementById('kodKutusu').value;
     const dinamikAlan = document.getElementById('dinamikAlan');
     
-    // Eğer şifre doğruysa ve arayüz henüz ekranda yoksa oluştur
+    // 1. Durum: Eğer hiçbir şey yazmıyorsa boş bırak
+    if (girilenYazi === "") {
+        dinamikAlan.innerHTML = "";
+        arayuzOlustu = false;
+        return;
+    }
+
+    // 2. Durum: Eğer doğru şifre yazıldıysa gizli arayüzü aç
     if (girilenYazi === 'secretcode1234') {
         if (!arayuzOlustu) {
             gizliArayuzOlustur(dinamikAlan);
         }
     } else {
-        // Şifre silinirse veya yanlışsa paneli ekrandan kaldır
-        dinamikAlan.innerHTML = "";
+        // 3. Durum: Şifre yanlışsa veya rastgele bir kod yazılıyorsa SAHTE HATA göster
         arayuzOlustu = false;
+        dinamikAlan.innerHTML = `
+            <div style="background: #5a1818; border: 2px solid #ff4a4a; padding: 15px; margin-top: 20px; border-radius: 8px; text-align: left; font-family: monospace;">
+                <b style="color: #ff4a4a;">[CRITICAL ERROR]</b> Connection failed.<br>
+                <span style="color: #ccc;">Status:</span> Code Compilation Failed<br>
+                <span style="color: #ccc;">Reason:</span> Error 404 - API Gateway Timeout<br>
+                <span style="color: #ff9999;">⚠️ Sunucu yanıt vermiyor. Lütfen kod dizilimini kontrol edin.</span>
+            </div>
+        `;
     }
 }
 
 // TAMAMEN JAVASCRIPT ILE ARAYÜZ (UI) OLUŞTURMA
 function gizliArayuzOlustur(hedefKutu) {
     arayuzOlustu = true;
+    hedefKutu.innerHTML = ""; // Varsa önceki sahte hatayı temizle
 
-    // 1. Dış panel kutusunu oluşturuyoruz
+    // Dış panel kutusunu oluşturuyoruz
     const gizliPanel = document.createElement('div');
     gizliPanel.style.background = "#111";
     gizliPanel.style.border = "2px dashed #4caf50";
@@ -38,23 +53,23 @@ function gizliArayuzOlustur(hedefKutu) {
     gizliPanel.style.maxWidth = "500px";
     gizliPanel.style.margin = "20px auto";
 
-    // 2. Başlık ekliyoruz
+    // Başlık ekliyoruz
     const baslik = document.createElement('h2');
     baslik.innerText = "🔓 Geliştirici Oyun Modu Aktif";
     baslik.style.color = "#4caf50";
     gizliPanel.appendChild(baslik);
 
-    // 3. Açıklama yazısı ekliyoruz
+    // Açıklama yazısı ekliyoruz
     const aciklama = document.createElement('p');
     aciklama.innerText = "Gizli pencerede (about:blank) açmak için bir oyuna tıklayın:";
     gizliPanel.appendChild(aciklama);
 
-    // 4. Her oyun için JS ile buton üretiyoruz
+    // Her oyun için JS ile buton üretiyoruz
     oyunlar.forEach(oyun => {
         const buton = document.createElement('button');
         buton.innerText = oyun.isim;
         
-        // Butonun renkleri ve şekli
+        // Buton stilleri
         buton.style.background = "#e91e63";
         buton.style.color = "white";
         buton.style.border = "none";
@@ -64,18 +79,16 @@ function gizliArayuzOlustur(hedefKutu) {
         buton.style.cursor = "pointer";
         buton.style.fontSize = "14px";
         
-        // Fare üzerine gelince renk değiştirme (Hover) efekti
+        // Hover efektleri
         buton.onmouseover = () => buton.style.background = "#c2185b";
         buton.onmouseout = () => buton.style.background = "#e91e63";
 
         // Tıklanınca maskeli pencereyi açma komutu
         buton.onclick = () => oyunuBaslat(oyun.link);
 
-        // Butonu panele ekle
         gizliPanel.appendChild(buton);
     });
 
-    // 5. Hazırladığımız tüm bu gizli paneli sayfaya enjekte et
     hedefKutu.appendChild(gizliPanel);
 }
 
@@ -93,4 +106,8 @@ function oyunuBaslat(oyunLinki) {
     cerceve.style.border = "none";
     
     bosPencere.document.body.appendChild(cerceve);
+
+    // 🚀 GÜNCELLENEN PANİK MODU: 
+    // Oyun açıldığı an arkadaki sekme anında Metodbox sitesine yönlenir!
+    window.location.href = "https://metodbox.com";
 }
